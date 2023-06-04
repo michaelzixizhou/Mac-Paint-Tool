@@ -1,9 +1,0 @@
-TODO:
-
-Selection tool
-Text tool
-Resizeable images
-Buttons and GUI
-Color palette
-Pen sizes 
-
