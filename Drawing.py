@@ -1,7 +1,7 @@
-from pygame import Rect, Color
+from pygame import Rect
 
 
-class DrawingObject:
+class DrawingObject():
     """
     To store lines with color and thickness
     """
@@ -17,7 +17,7 @@ class DrawingObject:
         self.thickness = thickness
 
     
-class DrawingClipboard:
+class DrawingClipboard():
     """
     Stores drawing rects to be rendered and erased.
 
@@ -31,7 +31,7 @@ class DrawingClipboard:
     def addLines(self, line: DrawingObject) -> None:
         self.lines.append(line)
 
-    def checkCollision(self, line: DrawingObject, rect: Rect) -> bool:
+    def check_collision(self, line: DrawingObject, rect: Rect) -> bool:
         
         if line.start[0] < line.end[0]:
             x1, y1 = line.start[0], line.start[1]
@@ -69,7 +69,7 @@ class DrawingClipboard:
         """
         to_return = []
         for line in self.lines:
-            if self.checkCollision(line, rect):
+            if self.check_collision(line, rect):
                 to_return.append(line)
 
     def eraseAt(self, rect: Rect) -> None:
@@ -77,7 +77,12 @@ class DrawingClipboard:
         Erases the lines that collide with <rect>
         """
         for line in self.lines:
-            if self.checkCollision(line, rect):
+            if self.check_collision(line, rect):
                 self.lines.remove(line)
 
+    def clearBoard(self) -> None:
+        """
+        Clears all lines
+        """
+        self.lines = []
 

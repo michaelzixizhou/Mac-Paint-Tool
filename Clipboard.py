@@ -3,7 +3,7 @@ import pygame
 from typing import Optional
 from ImageObject import ImageObject
 from Drawing import DrawingObject, DrawingClipboard
-from GUI import GUI
+import GUI
 
 
 def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> ImageObject:
@@ -45,8 +45,10 @@ class Clipboard():
         self.selected_img = None
         self.moving = False
         self.drawBoard = None
-        self.mode = "eraser"
+        self.mode = "movement"
         self.gui = None
+
+        self.run_visualizer()
     
     def addImage(self, img: ImageObject) -> None:
         self.images.append(img)
@@ -67,7 +69,7 @@ class Clipboard():
 
         self.screen = pygame.display.set_mode(self.res, pygame.RESIZABLE)
 
-        pygame.display.set_caption("Clipboard")
+        pygame.display.set_caption("Silicon Clipboard")
 
         self.event_loop()
 
@@ -89,8 +91,9 @@ class Clipboard():
         
         self.gui.display(self.screen)
 
-        if self.mode == "eraser":
-            pygame.draw.circle(self.screen, (255, 255, 255), pygame.mouse.get_pos(), radius=5, width=2)
+        ### Eraser cursor
+        # if self.mode == "eraser":
+        #     pygame.draw.circle(self.screen, (255, 255, 255), pygame.mouse.get_pos(), radius=5, width=2)
 
         pygame.display.flip()
 
@@ -113,7 +116,7 @@ class Clipboard():
                 print("nothing selected")
     
 
-    def drawingMode(self, event: pygame.event.Event, color: tuple[int, int, int, int] = (255, 255, 255, 255), width: int = 2) -> None:
+    def drawingMode(self, event: pygame.event.Event, color: tuple[int, int, int, int] = (255, 255, 255, 255), width: int = 3) -> None:
         """
         Draws and registers DrawingObjects to the clipboard with <color> and <width>
         """
@@ -144,8 +147,9 @@ class Clipboard():
         Limited to 60 FPS
         """
         self.drawBoard = DrawingClipboard()
-        self.GUI = GUI(self.res)
+        self.gui = GUI.GUI(self, self.res, self.screen)
         clock = pygame.time.Clock()
+        pygame.mouse.set_cursor(pygame.cursors.diamond)
 
         while (True):
             for event in pygame.event.get():
@@ -171,6 +175,9 @@ class Clipboard():
                         self.mode = "drawing"
                     elif (event.key == pygame.K_e):
                         self.mode = "eraser"
+                    
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    self.gui.check_collision(event, self)
 
                 match self.mode:
                     case "movement": 
@@ -187,5 +194,4 @@ class Clipboard():
 
 if __name__ == "__main__":
     clipboard = Clipboard((1000, 800))
-    clipboard.run_visualizer()
 
