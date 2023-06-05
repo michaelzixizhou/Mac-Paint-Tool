@@ -27,7 +27,9 @@ def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> Im
 
 class Clipboard():
     """
-    Clipboard application
+    Clipboard application.
+
+    Sets up and runs pygame.
     """
     res: tuple[int, int]
     images: list[ImageObject]
@@ -39,6 +41,17 @@ class Clipboard():
     gui: GUI
 
     def __init__(self, res: tuple[int, int]) -> None:
+        """
+        Runs the application at <res> resolution.
+
+        Stores singletons of DrawingBoard and GUI.
+
+        ===========================================
+        Current modes:
+        movement - interacting with image objects
+        drawing - draws lines
+        eraser - erases lines
+        """
         self.res = res
         self.images = []
         self.screen = None
@@ -51,9 +64,15 @@ class Clipboard():
         self.run_visualizer()
     
     def addImage(self, img: ImageObject) -> None:
+        """
+        Adds <img> to the current canvas to be loaded and displayed
+        """
         self.images.append(img)
     
     def findImage(self, point: tuple[int, int]) -> Optional[ImageObject]:
+        """
+        Finds the image at <point> on the canvas and returns it, if there doesn't exist one, return None.
+        """
         x, y = point
         for i in range(len(self.images) - 1, -1, -1):
             rect = self.images[i].get_rect()
@@ -69,10 +88,9 @@ class Clipboard():
 
         self.screen = pygame.display.set_mode(self.res, pygame.RESIZABLE)
 
-        pygame.display.set_caption("Silicon Clipboard")
+        pygame.display.set_caption("Mac paint")
 
         self.event_loop()
-
 
     def render_screen(self) -> None:
         """
@@ -118,7 +136,7 @@ class Clipboard():
 
     def drawingMode(self, event: pygame.event.Event, color: tuple[int, int, int, int] = (255, 255, 255, 255), width: int = 3) -> None:
         """
-        Draws and registers DrawingObjects to the clipboard with <color> and <width>
+        Draws and registers DrawingObjects to the clipboard with <color> and <width>.
         """
         if event.type == pygame.MOUSEMOTION:
             if event.buttons[0]: # left mouse button
@@ -128,7 +146,7 @@ class Clipboard():
     
     def eraserMode(self, event: pygame.event.Event, width: int = 30) -> None:
         """
-        Erases DrawingObjects with a <width>-sized rectangle
+        Erases DrawingObjects with a <width>-sized rectangle.
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.moving = True

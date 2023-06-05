@@ -16,12 +16,15 @@ class DrawingObject():
         self.end = end
         self.thickness = thickness
 
+    def __repr__(self) -> str:
+        return f"Line from {self.start} to {self.end}"
+
     
 class DrawingClipboard():
     """
     Stores drawing rects to be rendered and erased.
 
-    Singleton object, stores ALL drawing objects
+    Singleton object, stores ALL drawingObjects
     """
     lines: list[DrawingObject]
 
@@ -32,7 +35,9 @@ class DrawingClipboard():
         self.lines.append(line)
 
     def check_collision(self, line: DrawingObject, rect: Rect) -> bool:
-        
+        """
+        Check if <rect> collides with any lines
+        """
         if line.start[0] < line.end[0]:
             x1, y1 = line.start[0], line.start[1]
             x2, y2 = line.end[0], line.end[1]

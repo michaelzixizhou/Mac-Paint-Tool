@@ -13,7 +13,7 @@ class ImageObject():
         self.rect = image.get_rect().move([pos[0], pos[1]])
 
     def __repr__(self) -> str:
-        return f"{self.rect.center}"
+        return f"Image at {self.rect.center}"
 
     def move(self, pos: tuple[int, int]):
         self.rect.move_ip(pos[0], pos[1])
