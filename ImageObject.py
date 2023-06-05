@@ -5,16 +5,18 @@ class ImageObject():
     """
     Stores images to be rendered and moved
     """
+    image: Surface
+    rect: Rect
 
     def __init__(self, image: Surface, pos: tuple[int, int]) -> None:
         self.image = image
-        self.pos = image.get_rect().move([pos[0], pos[1]])
+        self.rect = image.get_rect().move([pos[0], pos[1]])
 
     def __repr__(self) -> str:
-        return f"{self.pos.center}"
+        return f"{self.rect.center}"
 
     def move(self, pos: tuple[int, int]):
-        self.pos.move_ip(pos[0], pos[1])
+        self.rect.move_ip(pos[0], pos[1])
 
     def get_rect(self) -> Rect:
-        return self.pos
+        return self.rect

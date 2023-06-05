@@ -3,6 +3,7 @@ import pygame
 from typing import Optional
 from ImageObject import ImageObject
 from Drawing import DrawingObject, DrawingClipboard
+from GUI import GUI
 
 
 def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> ImageObject:
@@ -28,15 +29,24 @@ class Clipboard():
     """
     Clipboard application
     """
+    res: tuple[int, int]
     images: list[ImageObject]
+    screen: pygame.Surface
+    selected_img: ImageObject
+    moving: bool
+    drawBoard: DrawingClipboard
+    mode: str
+    gui: GUI
 
-    def __init__(self) -> None:
+    def __init__(self, res: tuple[int, int]) -> None:
+        self.res = res
         self.images = []
         self.screen = None
         self.selected_img = None
         self.moving = False
         self.drawBoard = None
         self.mode = "eraser"
+        self.gui = None
     
     def addImage(self, img: ImageObject) -> None:
         self.images.append(img)
@@ -49,13 +59,13 @@ class Clipboard():
                 return self.images[i]
         return None
     
-    def run_visualizer(self, res: tuple[int, int]) -> None:
+    def run_visualizer(self) -> None:
         """
         Runs the pygame visualizer with <res> as the resolution.
         """
         pygame.init()
 
-        self.screen = pygame.display.set_mode(res, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.res, pygame.RESIZABLE)
 
         pygame.display.set_caption("Clipboard")
 
@@ -76,6 +86,8 @@ class Clipboard():
         
         for drawing in self.drawBoard.lines:
             pygame.draw.line(self.screen, drawing.color, drawing.start, drawing.end, drawing.thickness)
+        
+        self.gui.display(self.screen)
 
         if self.mode == "eraser":
             pygame.draw.circle(self.screen, (255, 255, 255), pygame.mouse.get_pos(), radius=5, width=2)
@@ -132,6 +144,7 @@ class Clipboard():
         Limited to 60 FPS
         """
         self.drawBoard = DrawingClipboard()
+        self.GUI = GUI(self.res)
         clock = pygame.time.Clock()
 
         while (True):
@@ -173,6 +186,6 @@ class Clipboard():
 
 
 if __name__ == "__main__":
-    clipboard = Clipboard()
-    clipboard.run_visualizer((1000, 800))
+    clipboard = Clipboard((1000, 800))
+    clipboard.run_visualizer()
 

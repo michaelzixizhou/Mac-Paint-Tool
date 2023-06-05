@@ -1,11 +1,16 @@
-from pygame import Rect
+from pygame import Rect, Color
 
 
 class DrawingObject:
     """
     To store lines with color and thickness
     """
-    def __init__(self, color, start: tuple[int, int], end: tuple[int, int], thickness: int) -> None:
+    color: tuple[int, int, int, int]
+    start: tuple[int, int]
+    end: tuple[int, int]
+    thickness: int
+
+    def __init__(self, color: tuple[int, int, int, int], start: tuple[int, int], end: tuple[int, int], thickness: int) -> None:
         self.color = color
         self.start = start
         self.end = end
