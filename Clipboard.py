@@ -208,6 +208,7 @@ class Clipboard():
                     case _: # no matches
                         print("mode name does not exist")
                         self.mode = "movement"
+
             self.gui.palette.update()
             
             clock.tick(60)    
