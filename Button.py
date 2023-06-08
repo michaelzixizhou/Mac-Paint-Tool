@@ -16,6 +16,9 @@ class Button():
         self.color = color
         self.rect = rect
 
+    def __repr__(self) -> str:
+        return str(type(self))
+
     def get_rect(self) -> Rect:
         return self.rect
 

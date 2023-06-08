@@ -1,17 +1,19 @@
 from PIL import ImageGrab, Image
 import pygame
-from typing import Optional
-from ImageObject import ImageObject
-from Drawing import DrawingObject, DrawingClipboard
 import GUI
+from typing import Optional, Union
+from ImageObject import ImageObject
+from Drawing import DrawingLine, DrawingClipboard
 
 
-def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> ImageObject:
+def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> Optional[ImageObject]:
     """
     Gets an image form clipboard and converts it to a pygame.Surface.
     Parameter <resize> controls the size of the Surface.
     """
     img = ImageGrab.grabclipboard()
+    if not img:
+        return None
     
     if resize:
         ratio = img.height / img.width
@@ -20,7 +22,7 @@ def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> Im
 
         img = img.resize((int(new_w), int(new_h)), Image.LANCZOS)
 
-    img = pygame.image.fromstring(img.tobytes(), img.size, img.mode)
+    img = pygame.image.fromstring(img.tobytes(), img.size, img.mode) # type: ignore
 
     return ImageObject(img, mousepos)
 
@@ -31,14 +33,15 @@ class Clipboard():
 
     Sets up and runs pygame.
     """
+    
     res: tuple[int, int]
     images: list[ImageObject]
     screen: pygame.Surface
-    selected_img: ImageObject
+    selected_img: Optional[ImageObject]
     moving: bool
     drawBoard: DrawingClipboard
     mode: str
-    gui: GUI
+
 
     def __init__(self, res: tuple[int, int]) -> None:
         """
@@ -54,12 +57,9 @@ class Clipboard():
         """
         self.res = res
         self.images = []
-        self.screen = None
         self.selected_img = None
         self.moving = False
-        self.drawBoard = None
         self.mode = "movement"
-        self.gui = None
 
         self.run_visualizer()
     
@@ -104,9 +104,10 @@ class Clipboard():
         if self.selected_img:
             pygame.draw.rect(self.screen, (255, 0, 0), self.selected_img.get_rect(), 2)  
         
-        for drawing in self.drawBoard.lines:
-            pygame.draw.line(self.screen, drawing.color, drawing.start, drawing.end, drawing.thickness)
-        
+        for drawing in self.drawBoard.objs:
+            if isinstance(drawing, DrawingLine):
+                pygame.draw.line(self.screen, drawing.color, drawing.start, drawing.end, drawing.thickness)
+      
         self.gui.display(self.screen)
 
         ### Eraser cursor
@@ -122,27 +123,26 @@ class Clipboard():
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.selected_img = self.findImage(event.pos)
-            print(self.selected_img)
+            # print(self.selected_img)
             if self.selected_img:
                 self.moving = True
         elif event.type ==  pygame.MOUSEBUTTONUP:
             self.moving = False
         elif event.type == pygame.MOUSEMOTION and self.moving:
-            try:
+            if self.selected_img:
                 self.selected_img.move(event.rel)
-            except AttributeError:
-                print("nothing selected")
     
 
-    def drawingMode(self, event: pygame.event.Event, color: tuple[int, int, int, int] = (255, 255, 255, 255), width: int = 3) -> None:
+    def drawingMode(self, event: pygame.event.Event, color: Union[tuple[int, int, int, int], pygame.Color] = (255, 255, 255, 255), \
+                     width: int = 3) -> None:
         """
         Draws and registers DrawingObjects to the clipboard with <color> and <width>.
         """
         if event.type == pygame.MOUSEMOTION:
             if event.buttons[0]: # left mouse button
                 last = (event.pos[0]-event.rel[0], event.pos[1]-event.rel[1])
-                self.drawBoard.addLines(DrawingObject(color, last, event.pos, width))
-
+                self.drawBoard.addLines(DrawingLine(color, last, event.pos, width))
+        
     
     def eraserMode(self, event: pygame.event.Event, width: int = 30) -> None:
         """
@@ -165,7 +165,7 @@ class Clipboard():
         Limited to 60 FPS
         """
         self.drawBoard = DrawingClipboard()
-        self.gui = GUI.GUI(self, self.res, self.screen)
+        self.gui = GUI.Interface(self.screen)
         clock = pygame.time.Clock()
         pygame.mouse.set_cursor(pygame.cursors.diamond)
 
@@ -177,6 +177,7 @@ class Clipboard():
                 
                 if event.type == pygame.VIDEORESIZE:
                     pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    self.gui.update_size()
 
                 if event.type == pygame.KEYUP:
                     if (event.key == pygame.K_v) and (event.mod & pygame.KMOD_META):
@@ -201,10 +202,14 @@ class Clipboard():
                     case "movement": 
                         self.movingMode(event)
                     case "drawing":
-                        self.drawingMode(event)
+                        self.drawingMode(event, self.gui.palette.get_color())
                     case "eraser":
                         self.eraserMode(event)
-
+                    case _: # no matches
+                        print("mode name does not exist")
+                        self.mode = "movement"
+            self.gui.palette.update()
+            
             clock.tick(60)    
             self.render_screen()
 

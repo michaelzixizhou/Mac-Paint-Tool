@@ -1,16 +1,26 @@
-from pygame import Rect
+from pygame import Color, Rect
+from typing import Union
 
 
 class DrawingObject():
     """
-    To store lines with color and thickness
+    To be inherited from
     """
-    color: tuple[int, int, int, int]
+
+    def __init__(self) -> None:
+        pass
+
+
+class DrawingLine():
+    """
+    To store lines with color, start pos, end pos, and thickness
+    """
+    color: Union[tuple[int, int, int, int], Color]
     start: tuple[int, int]
     end: tuple[int, int]
     thickness: int
 
-    def __init__(self, color: tuple[int, int, int, int], start: tuple[int, int], end: tuple[int, int], thickness: int) -> None:
+    def __init__(self, color: Union[tuple[int, int, int, int], Color], start: tuple[int, int], end: tuple[int, int], thickness: int) -> None:
         self.color = color
         self.start = start
         self.end = end
@@ -19,6 +29,23 @@ class DrawingObject():
     def __repr__(self) -> str:
         return f"Line from {self.start} to {self.end}"
 
+
+# class DrawingDot():
+#     """
+#     To store dots with color, radius, center
+#     """
+#     color: tuple[int, int, int, int]
+#     center: tuple[int, int]
+#     radius: int
+
+#     def __init__(self, color: tuple[int, int, int, int], center: tuple[int, int], radius: int) -> None:
+#         self.color = color
+#         self.center = center
+#         self.radius = radius
+
+#     def __repr__(self) -> str:
+#         return f"Dot at {self.center}"
+
     
 class DrawingClipboard():
     """
@@ -26,15 +53,15 @@ class DrawingClipboard():
 
     Singleton object, stores ALL drawingObjects
     """
-    lines: list[DrawingObject]
+    objs: list[DrawingLine]
 
     def __init__(self) -> None:
-        self.lines = []
+        self.objs = []
 
-    def addLines(self, line: DrawingObject) -> None:
-        self.lines.append(line)
+    def addLines(self, line: DrawingLine) -> None:
+        self.objs.append(line)
 
-    def check_collision(self, line: DrawingObject, rect: Rect) -> bool:
+    def check_collision_line(self, line: DrawingLine, rect: Rect) -> bool:
         """
         Check if <rect> collides with any lines
         """
@@ -67,27 +94,49 @@ class DrawingClipboard():
                 start += 1
         
         return False
+    
+    # def check_collision_dot(self, dot: DrawingDot, rect: Rect) -> bool:
+    #     """
+    #     Check if rect collides with <dot>
+    #     """
+    #     h, k = dot.center
+    #     r = dot.radius
+        
+    #     for x in range(h - r, h + r + 1):
+    #         for y in range(k - r, k + r + 1):
+    #             if rect.collidepoint(x, y):
+    #                 return True
+                
+    #     return False
+    
+    def find_collision(self, obj, rect: Rect) -> bool:
+        if isinstance(obj, DrawingLine):
+            return self.check_collision_line(obj, rect)
+        # elif isinstance(obj, DrawingDot):
+        #     return self.check_collision_dot(obj, rect)
+        return False
 
-    def findLine(self, rect: Rect) -> list[DrawingObject]:
+    def findLine(self, rect: Rect) -> list[DrawingLine]:
         """
         Find the lines that collide with <rect>
         """
         to_return = []
-        for line in self.lines:
-            if self.check_collision(line, rect):
-                to_return.append(line)
+        for obj in self.objs:
+            if self.find_collision(obj, rect):
+                to_return.append(obj)
+        return to_return
 
     def eraseAt(self, rect: Rect) -> None:
         """
         Erases the lines that collide with <rect>
         """
-        for line in self.lines:
-            if self.check_collision(line, rect):
-                self.lines.remove(line)
+        for obj in self.objs:
+            if self.find_collision(obj, rect):
+                self.objs.remove(obj)
 
     def clearBoard(self) -> None:
         """
         Clears all lines
         """
-        self.lines = []
+        self.objs = []
 

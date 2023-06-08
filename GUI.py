@@ -1,16 +1,15 @@
 from pygame import Surface, Rect
 import pygame
 import Button
-from Clipboard import Clipboard
+from ColorPalette import ColorPalette
 
 
-class GUI():
+class Interface():
     """
     GUI that stores all the buttons in the form of clickable rects
 
     Singleton that holds all Buttons.
     """
-    clipboard: Clipboard
     color: tuple[int, int, int, int]
     rect: Rect
     buttons: list[Button.Button]
@@ -19,14 +18,14 @@ class GUI():
     buttonsize: int
     buttonspacing: int
     buttonpos: int
+    palette: ColorPalette
     
 
-    def __init__(self, cb: Clipboard, res: tuple[int, int], screen: Surface, color: tuple[int, int, int, int] = (128, 128, 128, 255), \
-                 width: int = 50, buttonspacing: int = 5) -> None:
-        self.clipboard = cb
+    def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (128, 128, 128, 255), \
+                 width: int = 70, buttonspacing: int = 5) -> None:
         self.color = color
         self.width = width
-        self.rect = Rect((0, 0), (res[0], width))
+        self.rect = Rect((0, 0), (screen.get_width(), width))
         self.buttons = []
         self.screen = screen
 
@@ -35,6 +34,14 @@ class GUI():
         self.buttonsize = width - 2 * buttonspacing
 
         self.construct_buttons()
+        self.construct_palette()
+
+    def update_size(self) -> None:
+        """
+        Updates size of GUI in the case that the screen is resized.
+        """
+        self.rect = Rect((0, 0), (self.screen.get_width(), self.width))
+        self.palette.resize(self.screen.get_width() - 300)
 
     def display(self, surface: Surface) -> None:
         """
@@ -43,9 +50,11 @@ class GUI():
         pygame.draw.rect(surface, self.color, self.rect)
 
         for button in self.buttons:
-            pygame.draw.rect(self.clipboard.screen, button.color, button.rect)
+            pygame.draw.rect(surface, button.color, button.rect)
+        
+        self.palette.draw(surface)
 
-    def check_collision(self, event: pygame.event.Event, clipboard: Clipboard) -> None:
+    def check_collision(self, event: pygame.event.Event, clipboard) -> None:
         """
         Check if a button is being pressed.
         """
@@ -87,5 +96,7 @@ class GUI():
             print(e)
             print("buttons probably out of bounds")
 
-    
+    def construct_palette(self) -> None:
+        cp = ColorPalette(self.rect.width - 300, 0, 300, self.width)
+        self.palette = cp
 
