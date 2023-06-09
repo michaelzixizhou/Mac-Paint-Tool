@@ -2,6 +2,7 @@ from pygame import Surface, Rect
 import pygame
 import Button
 from ColorPalette import ColorPalette
+from Dropdown import Dropdown
 
 
 class Interface():
@@ -19,6 +20,7 @@ class Interface():
     buttonspacing: int
     buttonpos: int
     palette: ColorPalette
+    dropdown: Dropdown
     
 
     def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (128, 128, 128, 255), \
@@ -35,6 +37,7 @@ class Interface():
 
         self.construct_buttons()
         self.construct_palette()
+        self.construct_dropdown()
 
     def update_size(self) -> None:
         """
@@ -43,7 +46,7 @@ class Interface():
         self.rect = Rect((0, 0), (self.screen.get_width(), self.width))
         self.palette.resize(self.screen.get_width() - 300)
 
-    def display(self, surface: Surface) -> None:
+    def display(self, surface: Surface, scroll: int) -> None:
         """
         Display the GUI on the pygame application.
         """
@@ -52,16 +55,18 @@ class Interface():
         for button in self.buttons:
             pygame.draw.rect(surface, button.color, button.rect)
         
-        self.palette.draw(surface)
+        self.palette.display(surface)
+        self.dropdown.display(surface, scroll)
 
-    def check_collision(self, event: pygame.event.Event, clipboard) -> None:
+    def button_press(self, event: pygame.event.Event, clipboard) -> bool:
         """
         Check if a button is being pressed.
         """
         for button in self.buttons:
             if button.get_rect().collidepoint(event.pos):
                 button.onClick(clipboard)
-                return 
+                return True
+        return False
             
     def _bp_increment(self) -> int:
         """
@@ -92,6 +97,9 @@ class Interface():
             clearButton = Button.ClearButton(Rect((self._bp_increment(), self.buttonspacing), size), (200, 0, 0, 255))
             self.buttons.append(clearButton)
 
+            textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (100, 100, 0, 255))
+            self.buttons.append(textButton)
+
         except Exception as e:
             print(e)
             print("buttons probably out of bounds")
@@ -99,4 +107,12 @@ class Interface():
     def construct_palette(self) -> None:
         cp = ColorPalette(self.rect.width - 300, 0, 300, self.width)
         self.palette = cp
+
+    def construct_dropdown(self) -> None:
+        dd = Dropdown([(255, 255, 255, 255), (130, 130, 130, 255)], [(255, 255, 255, 255), (130, 130, 130, 255)], 
+                      self._bp_increment(), self.buttonspacing, 200, 
+                      self.buttonsize // 3, pygame.font.Font(pygame.font.match_font("arialunicode"), 15), 
+                      "arialunicode", sorted(pygame.font.get_fonts()))
+        self.dropdown = dd
+        print()
 

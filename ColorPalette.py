@@ -2,6 +2,9 @@ import pygame
 
 
 class ColorPalette:
+    """
+    Color palette with a hue and lightness (greyscale) slider.
+    """
     x: int
     y: int
     w: int
@@ -30,7 +33,7 @@ class ColorPalette:
             pygame.draw.rect(self.image2, grey, (j+self.rad, 12, 1, 10))
 
         self.p1 = 0
-        self.p2 = 0
+        self.p2 = 0.5
 
     def get_saturation(self) -> pygame.Color:
         color = pygame.Color(0)
@@ -64,7 +67,7 @@ class ColorPalette:
             self.p2 = (mouse_pos[0] - self.rect1.left - self.rad) / self.pwidth
             self.p2 = (max(0, min(self.p2, 1)))
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def display(self, surface: pygame.Surface) -> None:
         surface.blit(self.image1, self.rect1)
         center1 = self.rect1.left + self.rad + self.p1 * self.pwidth, self.rect1.centery
         pygame.draw.circle(surface, self.get_saturation(), center1, self.rect1.height // 4)

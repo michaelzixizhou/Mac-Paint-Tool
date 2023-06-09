@@ -60,3 +60,11 @@ class ClearButton(Button):
     def onClick(self, clipboard: Clipboard) -> None:
         print("clearing board")
         clipboard.drawBoard.clearBoard()
+
+
+class TextButton(Button):
+    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+        super().__init__(rect, color)
+    
+    def onClick(self, clipboard: Clipboard) -> None:
+        clipboard.mode = "text"
