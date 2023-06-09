@@ -22,6 +22,10 @@ class Dropdown():
         msg = self.font.render(self.main, True, (0, 0, 0))
         surface.blit(msg, msg.get_rect(center = self.rect.center))
         
+        pygame.draw.polygon(surface, (0, 0, 0), [(self.rect.right - 5, self.rect.top + 5), 
+                                                       (self.rect.right - 21, self.rect.top + 5),
+                                                       (self.rect.right - 13, self.rect.bottom - 5)])
+        
         if self.draw_menu:
             for i, text in enumerate(self.options):
                 rect = self.rect.copy()
@@ -30,10 +34,7 @@ class Dropdown():
                 msg = self.font.render(text, True, (0, 0, 0))
                 surface.blit(msg, msg.get_rect(center = rect.center))
         
-        pygame.draw.polygon(surface, (100, 100, 100), [(self.rect.right - 10, self.rect.top - 10), 
-                                                       (self.rect.right - 20, self.rect.top - 10),
-                                                       (self.rect.right - 15, self.rect.top - 20)])
-
+        
 
 
     def update(self, event: pygame.event.Event, scroll: int) -> int:
@@ -57,6 +58,7 @@ class Dropdown():
             elif self.draw_menu and self.active_option >= 0:
                 self.draw_menu = False
                 return self.active_option
+            
         return -1
     
     def get_option(self) -> str:

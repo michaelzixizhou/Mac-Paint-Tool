@@ -195,6 +195,26 @@ class Clipboard():
 
             print(self.text)
 
+    def gui_control(self, event: pygame.event.Event) -> bool:
+        clickedGUI = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            clickedGUI = self.gui.rect.collidepoint(event.pos)
+            self.gui.button_press(event, self)
+            selected_option = self.gui.dropdown.update(event, self.scroll)
+            if selected_option >= 0:
+                self.gui.dropdown.main = self.gui.dropdown.options[selected_option]
+                self.font = self.gui.dropdown.get_option()
+        elif event.type == pygame.MOUSEMOTION:
+            self.gui.dropdown.menu_active = self.gui.dropdown.rect.collidepoint(event.pos)
+        
+            
+        if self.gui.dropdown.draw_menu:
+            if event.type == pygame.MOUSEWHEEL: 
+                self.scroll = min(self.scroll + event.y * 15, 0)
+            if event.type == pygame.MOUSEMOTION:
+                self.gui.dropdown.update(event, self.scroll)
+
+        return clickedGUI
 
 
     def event_loop(self) -> None:
@@ -228,23 +248,8 @@ class Clipboard():
                         except AttributeError:
                             print("Not an image")
         
-                    
-                clickedGUI = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    clickedGUI = self.gui.rect.collidepoint(event.pos)
-                    self.gui.button_press(event, self)
-                    selected_option = self.gui.dropdown.update(event, self.scroll)
-                    if selected_option >= 0:
-                        self.gui.dropdown.main = self.gui.dropdown.options[selected_option]
-                        self.font = self.gui.dropdown.get_option()
-                    
-                if self.gui.dropdown.draw_menu:
-                    if event.type == pygame.MOUSEWHEEL: 
-                        self.scroll = min(self.scroll + event.y * 15, 0)
-                
-        
 
-                if not clickedGUI:
+                if not self.gui_control(event):
                     match self.mode:
                         case "movement": 
                             self.movingMode(event)

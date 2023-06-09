@@ -23,7 +23,7 @@ class Interface():
     dropdown: Dropdown
     
 
-    def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (128, 128, 128, 255), \
+    def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (220, 220, 220, 255), \
                  width: int = 70, buttonspacing: int = 5) -> None:
         self.color = color
         self.width = width
