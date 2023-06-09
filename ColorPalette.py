@@ -35,7 +35,7 @@ class ColorPalette:
 
     def get_saturation(self) -> pygame.Color:
         color = pygame.Color(0)
-        color.hsla = (int(self.p1 * self.pwidth * 1.525), 100, 50, 100)
+        color.hsla = (int(self.p1 * 360), 100, 50, 100)
         return color
     
     def get_lightness(self) -> pygame.Color:

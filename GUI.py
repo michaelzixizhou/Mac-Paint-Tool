@@ -20,7 +20,8 @@ class Interface():
     buttonspacing: int
     buttonpos: int
     palette: ColorPalette
-    dropdown: Dropdown
+    font_dropdown: Dropdown
+    font_size_dropdown: Dropdown
     
 
     def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (220, 220, 220, 255), \
@@ -37,8 +38,10 @@ class Interface():
 
         self.construct_buttons()
         self.construct_palette()
-        self.construct_dropdown()
 
+        self.menuIsOpen = False
+
+        
     def update_size(self) -> None:
         """
         Updates size of GUI in the case that the screen is resized.
@@ -56,12 +59,18 @@ class Interface():
             pygame.draw.rect(surface, button.color, button.rect)
         
         self.palette.display(surface)
-        self.dropdown.display(surface, scroll)
+        self.font_dropdown.display(surface, scroll)
+        self.font_size_dropdown.display(surface, 0)
 
     def button_press(self, event: pygame.event.Event, clipboard) -> bool:
         """
         Check if a button is being pressed.
         """
+        if self.font_dropdown.draw_menu or self.font_size_dropdown.draw_menu:
+            self.menuIsOpen = True
+        else:
+            self.menuIsOpen = False
+
         for button in self.buttons:
             if button.get_rect().collidepoint(event.pos):
                 button.onClick(clipboard)
@@ -100,6 +109,25 @@ class Interface():
             textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (100, 100, 0, 255))
             self.buttons.append(textButton)
 
+            self.construct_font_dropdown()
+            
+            # smaller buttons
+            textColorButton = Button.TextColorButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
+                                                          (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
+                                                     (100, 100, 0, 255))
+            self.buttonpos += size[0] // 3 * 2 
+            self.buttons.append(textColorButton)
+            self.text_color_button = textColorButton
+
+            self.construct_font_size_dropdown()
+            self.buttonpos += 70 + self.buttonspacing
+
+            textApplyButton = Button.TextApplyButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
+                                                          (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
+                                                     (100, 100, 0, 255))
+            self.buttonpos += size[0] // 3 * 2 
+            self.buttons.append(textApplyButton)
+
         except Exception as e:
             print(e)
             print("buttons probably out of bounds")
@@ -108,11 +136,33 @@ class Interface():
         cp = ColorPalette(self.rect.width - 300, 0, 300, self.width)
         self.palette = cp
 
-    def construct_dropdown(self) -> None:
+    def construct_font_dropdown(self) -> None:
         dd = Dropdown([(255, 255, 255, 255), (130, 130, 130, 255)], [(255, 255, 255, 255), (130, 130, 130, 255)], 
-                      self._bp_increment(), self.buttonspacing, 200, 
+                      self.buttonpos, self.buttonspacing, 200, 
                       self.buttonsize // 3, pygame.font.Font(pygame.font.match_font("arialunicode"), 15), 
                       "arialunicode", sorted(pygame.font.get_fonts()))
-        self.dropdown = dd
-        print()
+        self.font_dropdown = dd
+
+        dd.active_option = dd.find_option_index("arialunicode")
+        
+    def construct_font_size_dropdown(self) -> None:
+        size_list = []
+        for i in range(4, 16):
+            size_list.append(str(i + 1))
+        for i in range(10):
+            size_list.append(str((i+1) * 4 + 16))
+        for i in range(5):
+            size_list.append(str((i + 1) * 8 + 56))
+        for i in range(5):
+            size_list.append(str((i + 1) * 48 + 104))
+        
+
+        dd  = Dropdown([(255, 255, 255, 255), (130, 130, 130, 255)], [(255, 255, 255, 255), (130, 130, 130, 255)], 
+                      self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3, 70, 
+                      self.buttonsize // 3, pygame.font.Font(pygame.font.match_font("arialunicode"), 15), 
+                      "32", size_list)
+        dd.active_option = dd.find_option_index("32")
+
+        self.font_size_dropdown = dd
+
 

@@ -1,6 +1,7 @@
 from pygame import Surface, Rect
 import pygame
 from Clipboard import Clipboard
+from typing import Union, Optional
 
 
 class Button():
@@ -9,10 +10,10 @@ class Button():
 
     Buttons that have a function when clicked
     """
-    color: tuple[int, int, int, int]
+    color: Union[tuple[int, int, int, int], pygame.Color]
     rect: Rect
 
-    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         self.color = color
         self.rect = rect
 
@@ -27,7 +28,7 @@ class Button():
 
 
 class PenButton(Button):
-    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         super().__init__(rect, color)
 
     def onClick(self, clipboard: Clipboard) -> None:
@@ -36,7 +37,7 @@ class PenButton(Button):
 
 
 class EraserButton(Button):
-    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         super().__init__(rect, color)
 
     def onClick(self, clipboard: Clipboard) -> None:
@@ -54,7 +55,7 @@ class MovementButton(Button):
 
 
 class ClearButton(Button):
-    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         super().__init__(rect, color)
 
     def onClick(self, clipboard: Clipboard) -> None:
@@ -63,8 +64,25 @@ class ClearButton(Button):
 
 
 class TextButton(Button):
-    def __init__(self, rect: Rect, color: tuple[int, int, int, int]) -> None:
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         super().__init__(rect, color)
     
     def onClick(self, clipboard: Clipboard) -> None:
+        print("text")
         clipboard.mode = "text"
+
+
+class TextColorButton(Button):
+    def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
+        super().__init__(rect, color)
+    
+    def onClick(self, clipboard: Clipboard) -> None:
+        self.color = clipboard.gui.palette.get_color()
+
+
+class TextApplyButton(Button):
+    def __init__(self, rect: Rect, color: tuple[int, int, int, int] | pygame.Color) -> None:
+        super().__init__(rect, color)
+
+    def onClick(self, clipboard: Clipboard) -> None:
+        clipboard.moving = True

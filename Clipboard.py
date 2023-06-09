@@ -1,4 +1,5 @@
 from PIL import ImageGrab, Image
+import pyperclip
 import pygame
 import GUI
 from typing import Optional, Union
@@ -63,6 +64,7 @@ class Clipboard():
         self.mode = "movement"
         self.text = ''
         self.font = "arialunicode"
+        self.font_size = 32
         self.scroll = 0
 
         self.run_visualizer()
@@ -108,10 +110,12 @@ class Clipboard():
             if isinstance(image, ImageObject):
                 self.screen.blit(image.image, image.get_rect())
             elif isinstance(image, TextBox):
+                if image.text == '' and image != self.selected_box:
+                    self.boxes.remove(image)
                 image.display(self.screen)
 
         if self.selected_box:
-            pygame.draw.rect(self.screen, (255, 0, 0), self.selected_box.get_rect(), 2)  
+            pygame.draw.rect(self.screen, (255, 255, 255), self.selected_box.get_rect(), 1)  
         
         for drawing in self.drawBoard.objs:
             if isinstance(drawing, DrawingLine):
@@ -167,24 +171,32 @@ class Clipboard():
             
     
     def textMode(self, event: pygame.event.Event, color: pygame.Color = pygame.Color(255, 255, 255), 
-                 font: str = "arialunicode", font_size: int = 30) -> None:
+                 font: str = "arialunicode", font_size: int = 32) -> None:
         """
         Creates TextBox objects to display text
         """
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN and not self.moving:
             temp = self.findImage(event.pos)
             if isinstance(temp, TextBox):
                 self.selected_box = temp
                 self.text = self.selected_box.text
             else:
-                self.selected_box = TextBox(pygame.Rect(event.pos, (font_size, font_size)), color, font, font_size)
+                self.selected_box = TextBox(pygame.Rect(event.pos, (self.font_size, self.font_size)), color, self.font, self.font_size)
                 self.addBox(self.selected_box)
                 self.text = ''
+
+            self._update_text_dropdowns()
+            
         
-        if event.type == pygame.KEYDOWN and isinstance(self.selected_box, TextBox):
-            print("entered")
+        if event.type == pygame.KEYDOWN and isinstance(self.selected_box, TextBox):  
             if event.key == pygame.K_RETURN:
                 self.selected_box = None
+            elif (event.key == pygame.K_BACKSPACE) and (event.mod & pygame.KMOD_META):
+                self.text = ''
+            elif (event.key == pygame.K_c) and (event.mod & pygame.KMOD_META):
+                pyperclip.copy(self.text)
+            elif (event.key == pygame.K_v) and (event.mod & pygame.KMOD_META):
+                self.text += pyperclip.paste()
             elif event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
             else:
@@ -193,26 +205,63 @@ class Clipboard():
             if self.selected_box:
                 self.selected_box.change_text(self.text)
 
-            print(self.text)
+        if isinstance(self.selected_box, TextBox) and self.moving:
+            print("entered")
+            self.selected_box.color = self.gui.text_color_button.color
+            self.selected_box.font = self.font
+            
+            self.selected_box.font_size = int(self.gui.font_size_dropdown.get_option())
+            print(self.selected_box.font_size)
+            
+            self._update_text_dropdowns()
+
+            self.moving = False
+
+    def _update_text_dropdowns(self) -> None:
+        assert isinstance(self.selected_box, TextBox)
+        self.font = self.selected_box.font
+        self.font_size = self.selected_box.font_size
+        self.color = self.selected_box.color
+
+        self.gui.font_dropdown.set_option(self.gui.font_dropdown.find_option_index(self.font))
+        self.gui.font_size_dropdown.set_option(self.gui.font_size_dropdown.find_option_index(str(self.font_size)))
+
+        self.gui.text_color_button.color = self.color
+
 
     def gui_control(self, event: pygame.event.Event) -> bool:
+        """
+        Handles all GUI work
+        """
+
         clickedGUI = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             clickedGUI = self.gui.rect.collidepoint(event.pos)
             self.gui.button_press(event, self)
-            selected_option = self.gui.dropdown.update(event, self.scroll)
-            if selected_option >= 0:
-                self.gui.dropdown.main = self.gui.dropdown.options[selected_option]
-                self.font = self.gui.dropdown.get_option()
-        elif event.type == pygame.MOUSEMOTION:
-            self.gui.dropdown.menu_active = self.gui.dropdown.rect.collidepoint(event.pos)
+
+            font_option = self.gui.font_dropdown.update(event, self.scroll)
+            if font_option >= 0:
+                self.gui.font_dropdown.main = self.gui.font_dropdown.options[font_option]
+                self.font = self.gui.font_dropdown.get_option()
+
+            fontsize_option = self.gui.font_size_dropdown.update(event, 0)
+            if fontsize_option >= 0:
+                self.gui.font_size_dropdown.main = self.gui.font_size_dropdown.options[fontsize_option]
+                self.font_size = int(self.gui.font_size_dropdown.get_option())
         
+        elif event.type == pygame.MOUSEMOTION:
+            self.gui.font_dropdown.menu_active = self.gui.font_dropdown.rect.collidepoint(event.pos)
+            self.gui.font_size_dropdown.menu_active = self.gui.font_size_dropdown.rect.collidepoint(event.pos)
             
-        if self.gui.dropdown.draw_menu:
+        if self.gui.font_dropdown.draw_menu:
             if event.type == pygame.MOUSEWHEEL: 
-                self.scroll = min(self.scroll + event.y * 15, 0)
+                self.scroll = min(self.scroll + event.y * 20, 0)
             if event.type == pygame.MOUSEMOTION:
-                self.gui.dropdown.update(event, self.scroll)
+                self.gui.font_dropdown.update(event, self.scroll)
+        elif self.gui.font_size_dropdown.draw_menu:
+            if event.type == pygame.MOUSEMOTION:
+                self.gui.font_size_dropdown.update(event, 0)
+
 
         return clickedGUI
 
@@ -245,11 +294,17 @@ class Clipboard():
                             if img:
                                 self.addBox(img)
                                 self.selected_box = img
+                            else:
+                                self.selected_box = TextBox(pygame.Rect(event.pos, (self.font_size, self.font_size)), 
+                                                            self.gui.palette.get_color(), self.font)
+                                self.addBox(self.selected_box)
+                                self.mode = "text"
+                                
                         except AttributeError:
                             print("Not an image")
-        
+                        
 
-                if not self.gui_control(event):
+                if not self.gui_control(event) and not self.gui.menuIsOpen:
                     match self.mode:
                         case "movement": 
                             self.movingMode(event)
@@ -258,7 +313,8 @@ class Clipboard():
                         case "eraser":
                             self.eraserMode(event)
                         case "text":
-                            self.textMode(event, self.gui.palette.get_color(), self.font)
+                            if not self.gui.font_dropdown.draw_menu and not self.gui.font_size_dropdown.draw_menu:
+                                self.textMode(event, self.gui.palette.get_color(), self.font)
                         case _: # no matches
                             print("mode name does not exist")
                             self.mode = "movement"

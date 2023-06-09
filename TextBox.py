@@ -42,7 +42,7 @@ class TextBox():
             print("font not found")
             font = pygame.font.Font(pygame.font.match_font("arialunicode"), self.font_size)
 
-        text_surface = font.render(self.text, True, self.color)
+        text_surface = font.render(self.text, False, self.color)
         width = max(200, text_surface.get_width()+10)
         self.rect.w = width
         height = max(30, text_surface.get_height()+5)

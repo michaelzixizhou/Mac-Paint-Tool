@@ -16,6 +16,7 @@ class Dropdown():
         self.draw_menu = False
         self.menu_active = False
         self.active_option = -1
+        self.selection = self.main
 
     def display(self, surface: pygame.Surface, scroll: int) -> None:
         pygame.draw.rect(surface, self.color_menu[self.menu_active], self.rect, 0)
@@ -35,8 +36,6 @@ class Dropdown():
                 surface.blit(msg, msg.get_rect(center = rect.center))
         
         
-
-
     def update(self, event: pygame.event.Event, scroll: int) -> int:
         mpos = pygame.mouse.get_pos()
         self.menu_active = self.rect.collidepoint(mpos)
@@ -58,8 +57,21 @@ class Dropdown():
             elif self.draw_menu and self.active_option >= 0:
                 self.draw_menu = False
                 return self.active_option
+        
+        if self.active_option != -1:
+            self.selection = self.options[self.active_option]
             
         return -1
     
-    def get_option(self) -> str:
-        return self.options[self.active_option]
+    def get_option(self, n: int = -1) -> str:
+        if n > 0:
+            return self.options[n]
+        return self.selection
+    
+    def find_option_index(self, option: str) -> int:
+        return self.options.index(option)
+    
+    def set_option(self, index: int) -> None:
+        self.active_option = index
+        self.selection = self.options[index]
+        self.main = self.selection
