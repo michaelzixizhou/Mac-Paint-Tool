@@ -2,6 +2,6 @@
 
 ## A MS Paint alternative for Mac
 
-Run Clipboard.py to launch the application
+See releases for download
 
 Icons to be updated.
