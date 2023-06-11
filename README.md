@@ -1,6 +1,6 @@
 # Mac-Paint-Tool
 
-## A MS Paint alternative for Mac
+## A MS Paint alternative for MacOS
 
 See latest release for download!
 
