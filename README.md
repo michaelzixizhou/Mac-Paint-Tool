@@ -8,11 +8,11 @@ See latest release for download!
 
 ## Update roadmap
 
-P1:
-    Resizeable images
-    Color palette -> eye dropper tool
-P2:
-    Shapes and fill
-    Zoom
+<ol>
+    <li>Resizeable images</li>
+    <li>Eye dropper tool</li>
+    <li>Shapes and fill</li>
+    <li>Zoom</li>
+</ol>
 
 
