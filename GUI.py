@@ -56,7 +56,7 @@ class Interface():
         pygame.draw.rect(surface, self.color, self.rect)
 
         for button in self.buttons:
-            pygame.draw.rect(surface, button.color, button.rect)
+            button.display(self.screen)
         
         self.palette.display(surface)
         self.font_dropdown.display(surface, scroll)
@@ -94,19 +94,19 @@ class Interface():
         try:
             size = self.buttonsize, self.buttonsize
 
-            movementButton = Button.MovementButton(Rect((self._bp_increment(), self.buttonspacing), size), (200, 200, 0, 255))
+            movementButton = Button.MovementButton(Rect((self._bp_increment(), self.buttonspacing), size), (72, 99, 156, 255), pygame.image.load("Sprites/CursorSprite.png"))
             self.buttons.append(movementButton)
 
-            penButton = Button.PenButton(Rect((self._bp_increment(), self.buttonspacing), size), (0, 200, 200, 255))
+            penButton = Button.PenButton(Rect((self._bp_increment(), self.buttonspacing), size), (76, 76, 157, 255), pygame.image.load("Sprites/PenSprite.png"))
             self.buttons.append(penButton)
 
-            eraserButton = Button.EraserButton(Rect((self._bp_increment(), self.buttonspacing), size), (200, 0, 200, 255))
+            eraserButton = Button.EraserButton(Rect((self._bp_increment(), self.buttonspacing), size), (113, 47, 121, 255), pygame.image.load("Sprites/EraserSprite.png"))
             self.buttons.append(eraserButton)
 
-            clearButton = Button.ClearButton(Rect((self._bp_increment(), self.buttonspacing), size), (200, 0, 0, 255))
+            clearButton = Button.ClearButton(Rect((self._bp_increment(), self.buttonspacing), size), (151, 99, 145, 255), pygame.image.load("Sprites/CrossSprite.png"))
             self.buttons.append(clearButton)
 
-            textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (100, 100, 0, 255))
+            textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (247, 153, 110, 255), pygame.image.load("Sprites/TextSprite.png"))
             self.buttons.append(textButton)
 
             self.construct_font_dropdown()
@@ -124,7 +124,7 @@ class Interface():
 
             textApplyButton = Button.TextApplyButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
                                                           (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
-                                                     (100, 100, 0, 255))
+                                                     (248, 162, 123, 255), pygame.image.load("Sprites/CheckSprite.png"))
             self.buttonpos += size[0] // 3 * 2 
             self.buttons.append(textApplyButton)
 
