@@ -66,6 +66,9 @@ class Clipboard():
         self.font = "arialunicode"
         self.font_size = 32
         self.scroll = 0
+        self.pen_size = 3
+        self.eraser_size = 32
+        self.eraser_check = False
 
         self.run_visualizer()
     
@@ -121,7 +124,7 @@ class Clipboard():
             if isinstance(drawing, DrawingLine):
                 pygame.draw.line(self.screen, drawing.color, drawing.start, drawing.end, drawing.thickness)
       
-        self.gui.display(self.screen, self.scroll)
+        self.gui.display(self.screen, self.scroll, self.mode)
 
         ### Eraser cursor
         # if self.mode == "eraser":
@@ -151,23 +154,36 @@ class Clipboard():
         """
         Draws and registers DrawingObjects to the clipboard with <color> and <width>.
         """
+        if self.moving:
+            self.pen_size = int(self.gui.size_dropdown.get_option())
+            self.moving = False
+        self.gui.size_dropdown.set_option(self.gui.size_dropdown.find_option_index(str(self.pen_size)))
+        self.gui.size_dropdown.update(event, 0)
+
         if event.type == pygame.MOUSEMOTION:
             if event.buttons[0]: # left mouse button
                 last = (event.pos[0]-event.rel[0], event.pos[1]-event.rel[1])
-                self.drawBoard.addLines(DrawingLine(color, last, event.pos, width))
+                self.drawBoard.addLines(DrawingLine(color, last, event.pos, self.pen_size))
         
     
-    def eraserMode(self, event: pygame.event.Event, width: int = 30) -> None:
+    def eraserMode(self, event: pygame.event.Event, width: int = 32) -> None:
         """
         Erases DrawingObjects with a <width>-sized rectangle.
         """
+        if self.eraser_check:
+            self.eraser_size = int(self.gui.size_dropdown.get_option())
+            self.eraser_check= False
+        self.gui.size_dropdown.set_option(self.gui.size_dropdown.find_option_index(str(self.eraser_size)))
+        self.gui.size_dropdown.update(event, 0)
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             self.moving = True
         elif event.type == pygame.MOUSEBUTTONUP:
             self.moving = False
         elif event.type == pygame.MOUSEMOTION and self.moving:
-            eraserRect = pygame.Rect(0, 0, width, width)
+            eraserRect = pygame.Rect(0, 0, self.eraser_size, self.eraser_size)
             eraserRect.center = event.pos
+            self.drawBoard.eraseAt(eraserRect)
             
     
     def textMode(self, event: pygame.event.Event, color: pygame.Color = pygame.Color(255, 255, 255), 
@@ -210,7 +226,7 @@ class Clipboard():
             self.selected_box.color = self.gui.text_color_button.color
             self.selected_box.font = self.font
             
-            self.selected_box.font_size = int(self.gui.font_size_dropdown.get_option())
+            self.selected_box.font_size = int(self.gui.size_dropdown.get_option())
             print(self.selected_box.font_size)
             
             self._update_text_dropdowns()
@@ -224,7 +240,7 @@ class Clipboard():
         self.color = self.selected_box.color
 
         self.gui.font_dropdown.set_option(self.gui.font_dropdown.find_option_index(self.font))
-        self.gui.font_size_dropdown.set_option(self.gui.font_size_dropdown.find_option_index(str(self.font_size)))
+        self.gui.size_dropdown.set_option(self.gui.size_dropdown.find_option_index(str(self.font_size)))
 
         self.gui.text_color_button.color = self.color
 
@@ -244,23 +260,24 @@ class Clipboard():
                 self.gui.font_dropdown.main = self.gui.font_dropdown.options[font_option]
                 self.font = self.gui.font_dropdown.get_option()
 
-            fontsize_option = self.gui.font_size_dropdown.update(event, 0)
+            fontsize_option = self.gui.size_dropdown.update(event, 0)
             if fontsize_option >= 0:
-                self.gui.font_size_dropdown.main = self.gui.font_size_dropdown.options[fontsize_option]
-                self.font_size = int(self.gui.font_size_dropdown.get_option())
+                self.gui.size_dropdown.main = self.gui.size_dropdown.options[fontsize_option]
+                self.font_size = int(self.gui.size_dropdown.get_option())
         
-        elif event.type == pygame.MOUSEMOTION:
+        if event.type == pygame.MOUSEMOTION:
             self.gui.font_dropdown.menu_active = self.gui.font_dropdown.rect.collidepoint(event.pos)
-            self.gui.font_size_dropdown.menu_active = self.gui.font_size_dropdown.rect.collidepoint(event.pos)
+            self.gui.size_dropdown.menu_active = self.gui.size_dropdown.rect.collidepoint(event.pos)
+            
             
         if self.gui.font_dropdown.draw_menu:
             if event.type == pygame.MOUSEWHEEL: 
                 self.scroll = min(self.scroll + event.y * 20, 0)
             if event.type == pygame.MOUSEMOTION:
                 self.gui.font_dropdown.update(event, self.scroll)
-        elif self.gui.font_size_dropdown.draw_menu:
+        elif self.gui.size_dropdown.draw_menu:
             if event.type == pygame.MOUSEMOTION:
-                self.gui.font_size_dropdown.update(event, 0)
+                self.gui.size_dropdown.update(event, 0)
 
 
         return clickedGUI
@@ -308,12 +325,12 @@ class Clipboard():
                     match self.mode:
                         case "movement": 
                             self.movingMode(event)
-                        case "drawing":
+                        case "drawing":                            
                             self.drawingMode(event, self.gui.palette.get_color())
                         case "eraser":
                             self.eraserMode(event)
                         case "text":
-                            if not self.gui.font_dropdown.draw_menu and not self.gui.font_size_dropdown.draw_menu:
+                            if not self.gui.font_dropdown.draw_menu and not self.gui.size_dropdown.draw_menu:
                                 self.textMode(event, self.gui.palette.get_color(), self.font)
                         case _: # no matches
                             print("mode name does not exist")
@@ -324,6 +341,7 @@ class Clipboard():
             
             clock.tick(60)    
             self.render_screen()
+            
 
 
 if __name__ == "__main__":

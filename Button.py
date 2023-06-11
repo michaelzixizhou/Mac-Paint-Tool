@@ -77,6 +77,7 @@ class ClearButton(IconButton):
     def onClick(self, clipboard: Clipboard) -> None:
         print("clearing board")
         clipboard.drawBoard.clearBoard()
+        clipboard.boxes = []
 
 class TextButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
@@ -99,3 +100,4 @@ class TextApplyButton(IconButton):
 
     def onClick(self, clipboard: Clipboard) -> None:
         clipboard.moving = True
+        clipboard.eraser_check = True

@@ -21,7 +21,7 @@ class Interface():
     buttonpos: int
     palette: ColorPalette
     font_dropdown: Dropdown
-    font_size_dropdown: Dropdown
+    size_dropdown: Dropdown
     
 
     def __init__(self, screen: Surface, color: tuple[int, int, int, int] = (220, 220, 220, 255), \
@@ -40,7 +40,6 @@ class Interface():
         self.construct_palette()
 
         self.menuIsOpen = False
-
         
     def update_size(self) -> None:
         """
@@ -49,7 +48,7 @@ class Interface():
         self.rect = Rect((0, 0), (self.screen.get_width(), self.width))
         self.palette.resize(self.screen.get_width() - 300)
 
-    def display(self, surface: Surface, scroll: int) -> None:
+    def display(self, surface: Surface, scroll: int, mode: str) -> None:
         """
         Display the GUI on the pygame application.
         """
@@ -58,15 +57,36 @@ class Interface():
         for button in self.buttons:
             button.display(self.screen)
         
+        self._show_mode(surface, mode)
+
         self.palette.display(surface)
         self.font_dropdown.display(surface, scroll)
-        self.font_size_dropdown.display(surface, 0)
+        self.size_dropdown.display(surface, 0)
+
+
+    def _find_button(self, name: type) -> Button.Button: # type: ignore
+        for b in self.buttons:
+            if isinstance(b, name):
+                return b
+        
+    def _show_mode(self, surface: Surface, mode: str) -> None:
+        match mode:
+            case "movement": 
+                pygame.draw.rect(surface, (242, 66, 54), self._find_button(Button.MovementButton).get_rect(), 3)
+            case "drawing":
+                pygame.draw.rect(surface, (242, 66, 54), self._find_button(Button.PenButton).get_rect(), 3)
+            case "eraser":
+                pygame.draw.rect(surface, (242, 66, 54), self._find_button(Button.EraserButton).get_rect(), 3)
+            case "text":
+                pygame.draw.rect(surface, (242, 66, 54), self._find_button(Button.TextButton).get_rect(), 3)
+            case _: # no matches
+                print("mode name does not exist")
 
     def button_press(self, event: pygame.event.Event, clipboard) -> bool:
         """
         Check if a button is being pressed.
         """
-        if self.font_dropdown.draw_menu or self.font_size_dropdown.draw_menu:
+        if self.font_dropdown.draw_menu or self.size_dropdown.draw_menu:
             self.menuIsOpen = True
         else:
             self.menuIsOpen = False
@@ -76,6 +96,11 @@ class Interface():
                 button.onClick(clipboard)
                 return True
         return False
+    
+    def button_hover(self, event: pygame.event.Event, surface: Surface):
+        for b in self.buttons:
+            if b.rect.collidepoint(event.pos):
+                pygame.draw.rect(surface, (100, 100, 100, 100), b.rect)
             
     def _bp_increment(self) -> int:
         """
@@ -147,7 +172,7 @@ class Interface():
         
     def construct_font_size_dropdown(self) -> None:
         size_list = []
-        for i in range(4, 16):
+        for i in range(0, 16):
             size_list.append(str(i + 1))
         for i in range(10):
             size_list.append(str((i+1) * 4 + 16))
@@ -163,6 +188,6 @@ class Interface():
                       "32", size_list)
         dd.active_option = dd.find_option_index("32")
 
-        self.font_size_dropdown = dd
+        self.size_dropdown = dd
 
 
