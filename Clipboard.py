@@ -28,6 +28,27 @@ def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> Op
 
     return ImageObject(img, mousepos)
 
+def collideEdge(event: pygame.event.Event, rect: pygame.Rect) -> int:
+    """
+    Check if the mouse is hovering over the edge of a rect, for scaling purposes
+    """
+    w, h, x, y = rect.w, rect.h, rect.x, rect.y
+    offset = 20
+    edgerect = pygame.Rect(x - offset, y - offset, w + 2*offset, 2*offset)
+    if edgerect.collidepoint(event.pos):
+        return 1
+    edgerect.y += h
+    if edgerect.collidepoint(event.pos):
+        return 2
+
+    edgerect = pygame.Rect(x - offset, y - offset, 2*offset, h + 2* offset)
+    if edgerect.collidepoint(event.pos):
+        return 1
+    edgerect.x += w 
+    if edgerect.collidepoint(event.pos):
+        return 2
+    
+    return 0
 
 class Clipboard():
     """
@@ -69,6 +90,7 @@ class Clipboard():
         self.pen_size = 3
         self.eraser_size = 32
         self.eraser_check = False
+        self.resize = 0
 
         self.run_visualizer()
     
@@ -142,11 +164,45 @@ class Clipboard():
             # print(self.selected_img)
             if self.selected_box:
                 self.moving = True
+                if isinstance(self.selected_box, ImageObject):
+                    self.resize = collideEdge(event, self.selected_box.rect)
+                        
         elif event.type ==  pygame.MOUSEBUTTONUP:
             self.moving = False
+            if self.resize:
+                assert isinstance(self.selected_box, ImageObject)
+
+                self.resize = 0
+                self.selected_box.image = pygame.transform.scale(self.selected_box.image, (self.selected_box.rect.w, self.selected_box.rect.h))
+
         elif event.type == pygame.MOUSEMOTION and self.moving:
             if self.selected_box:
-                self.selected_box.move(event.rel)
+                match self.resize:
+                    case 0:
+                        self.selected_box.move(event.rel)
+                    case 1:
+                        assert isinstance(self.selected_box, ImageObject)
+
+                        self.selected_box.rect.w -= event.rel[0]
+                        self.selected_box.rect.h -= event.rel[1]
+                        self.selected_box.rect.w = max(self.selected_box.rect.w, 10)
+                        self.selected_box.rect.h = max(self.selected_box.rect.h, 10)    
+                        self.selected_box.rect.x += event.rel[0]
+                        self.selected_box.rect.y += event.rel[1]
+                    case 2:
+                        assert isinstance(self.selected_box, ImageObject)
+
+                        self.selected_box.rect.w += event.rel[0]
+                        self.selected_box.rect.h += event.rel[1]
+                        self.selected_box.rect.w = max(self.selected_box.rect.w, 10)
+                        self.selected_box.rect.h = max(self.selected_box.rect.h, 10)
+                    
+
+        if event.type == pygame.KEYDOWN and self.selected_box:
+            if event.key == pygame.K_BACKSPACE:
+                self.boxes.remove(self.selected_box)
+                self.selected_box = None
+            
     
 
     def drawingMode(self, event: pygame.event.Event, color: Union[tuple[int, int, int, int], pygame.Color], \
