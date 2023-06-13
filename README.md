@@ -9,7 +9,6 @@ See latest release for download!
 ## Update roadmap
 
 <ol>
-    <li>Resizeable images</li>
     <li>Eye dropper tool</li>
     <li>Shapes and fill</li>
     <li>Zoom</li>
