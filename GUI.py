@@ -3,7 +3,18 @@ import pygame
 import Button
 from ColorPalette import ColorPalette
 from Dropdown import Dropdown
+import sys
+import os
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS  # type: ignore
+    else:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 class Interface():
     """
@@ -82,7 +93,7 @@ class Interface():
             case _: # no matches
                 print("mode name does not exist")
 
-    def button_press(self, event: pygame.event.Event, clipboard) -> bool:
+    def button_press(self, event: pygame.event.Event, clipboard) -> int:
         """
         Check if a button is being pressed.
         """
@@ -93,9 +104,8 @@ class Interface():
 
         for button in self.buttons:
             if button.get_rect().collidepoint(event.pos):
-                button.onClick(clipboard)
-                return True
-        return False
+                return button.onClick()
+        return 0
     
     def button_hover(self, event: pygame.event.Event, surface: Surface):
         for b in self.buttons:
@@ -116,56 +126,63 @@ class Interface():
         """
         Add the buttons in order from left to right on the GUI.
         """
-        try:
-            size = self.buttonsize, self.buttonsize
+        # try:
+        pygame.font.init()
+        size = self.buttonsize, self.buttonsize
 
-            movementButton = Button.MovementButton(Rect((self._bp_increment(), self.buttonspacing), size), (72, 99, 156, 255), pygame.image.load("Sprites/CursorSprite.png"))
-            self.buttons.append(movementButton)
+        movementButton = Button.MovementButton(Rect((self._bp_increment(), self.buttonspacing), size), (72, 99, 156, 255), pygame.image.load(resource_path("Sprites/CursorSprite.png")))
+        self.buttons.append(movementButton)
 
-            penButton = Button.PenButton(Rect((self._bp_increment(), self.buttonspacing), size), (76, 76, 157, 255), pygame.image.load("Sprites/PenSprite.png"))
-            self.buttons.append(penButton)
+        penButton = Button.PenButton(Rect((self._bp_increment(), self.buttonspacing), size), (76, 76, 157, 255), pygame.image.load(resource_path("Sprites/PenSprite.png")))
+        self.buttons.append(penButton)
 
-            eraserButton = Button.EraserButton(Rect((self._bp_increment(), self.buttonspacing), size), (113, 47, 121, 255), pygame.image.load("Sprites/EraserSprite.png"))
-            self.buttons.append(eraserButton)
+        eraserButton = Button.EraserButton(Rect((self._bp_increment(), self.buttonspacing), size), (113, 47, 121, 255), pygame.image.load(resource_path("Sprites/EraserSprite.png")))
+        self.buttons.append(eraserButton)
 
-            clearButton = Button.ClearButton(Rect((self._bp_increment(), self.buttonspacing), size), (151, 99, 145, 255), pygame.image.load("Sprites/CrossSprite.png"))
-            self.buttons.append(clearButton)
+        clearButton = Button.ClearButton(Rect((self._bp_increment(), self.buttonspacing), size), (151, 99, 145, 255), pygame.image.load(resource_path("Sprites/CrossSprite.png")))
+        self.buttons.append(clearButton)
 
-            textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (247, 153, 110, 255), pygame.image.load("Sprites/TextSprite.png"))
-            self.buttons.append(textButton)
+        textButton = Button.TextButton(Rect((self._bp_increment(), self.buttonspacing), size), (247, 153, 110, 255), pygame.image.load(resource_path("Sprites/TextSprite.png")))
+        self.buttons.append(textButton)
 
-            self.construct_font_dropdown()
-            
-            # smaller buttons
-            textColorButton = Button.TextColorButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
-                                                          (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
-                                                     (100, 100, 0, 255))
-            self.buttonpos += size[0] // 3 * 2 
-            self.buttons.append(textColorButton)
-            self.text_color_button = textColorButton
+        self.construct_font_dropdown()
+        
+        # smaller buttons
+        textColorButton = Button.TextColorButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
+                                                        (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
+                                                    (100, 100, 0, 255))
+        self.buttonpos += size[0] // 3 * 2 
+        self.buttons.append(textColorButton)
+        self.text_color_button = textColorButton
 
-            self.construct_font_size_dropdown()
-            self.buttonpos += 70 + self.buttonspacing
+        self.construct_font_size_dropdown()
+        self.buttonpos += 70 + self.buttonspacing
 
-            textApplyButton = Button.TextApplyButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
-                                                          (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
-                                                     (248, 162, 123, 255), pygame.image.load("Sprites/CheckSprite.png"))
-            self.buttonpos += size[0] // 3 * 2 
-            self.buttons.append(textApplyButton)
+        textApplyButton = Button.TextApplyButton(Rect((self.buttonpos, 2 * self.buttonspacing + self.buttonsize // 3), 
+                                                        (size[0] // 3 * 2 - self.buttonspacing, size[1] // 3 * 2 - self.buttonspacing)), 
+                                                    (248, 162, 123, 255), pygame.image.load(resource_path("Sprites/CheckSprite.png")))
+        self.buttonpos += size[0] // 3 * 2 
+        self.buttons.append(textApplyButton)
 
-        except Exception as e:
-            print(e)
-            print("buttons probably out of bounds")
+        # except Exception as e:
+        #     print(e)
 
     def construct_palette(self) -> None:
         cp = ColorPalette(self.rect.width - 300, 0, 300, self.width)
         self.palette = cp
 
     def construct_font_dropdown(self) -> None:
+        fonts = []
+        for font in sorted(pygame.font.get_fonts()):
+            if font[:4] == "noto":
+                continue
+            else:
+                fonts.append(font)
+
         dd = Dropdown([(255, 255, 255, 255), (130, 130, 130, 255)], [(255, 255, 255, 255), (130, 130, 130, 255)], 
                       self.buttonpos, self.buttonspacing, 200, 
                       self.buttonsize // 3, pygame.font.Font(pygame.font.match_font("arialunicode"), 15), 
-                      "arialunicode", sorted(pygame.font.get_fonts()))
+                      "arialunicode", fonts)
         self.font_dropdown = dd
 
         dd.active_option = dd.find_option_index("arialunicode")

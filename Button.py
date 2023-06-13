@@ -1,6 +1,5 @@
 from pygame import Surface, Rect
 import pygame
-from Clipboard import Clipboard
 from typing import Union, Optional
 
 
@@ -23,7 +22,7 @@ class Button():
     def get_rect(self) -> Rect:
         return self.rect
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         raise NotImplementedError
     
     def display(self, surface: Surface) -> None:
@@ -38,7 +37,7 @@ class IconButton(Button):
         super().__init__(rect, color)
         self.icon = pygame.transform.scale(icon, (self.rect.w, self.rect.h))
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         raise NotImplementedError
 
     def display(self, surface: Surface) -> None:
@@ -50,54 +49,52 @@ class PenButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         print("drawing")        
-        clipboard.mode = "drawing"
+        return 1
 
 class EraserButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         print("eraser")
-        clipboard.mode = "eraser"
+        return 2
 
 class MovementButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         print("movement")
-        clipboard.mode = "movement"
+        return 3
 
 class ClearButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         print("clearing board")
-        clipboard.drawBoard.clearBoard()
-        clipboard.boxes = []
+        return 4
 
 class TextButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
+    def onClick(self) -> int:
         print("text")
-        clipboard.mode = "text"
+        return 5
 
 class TextColorButton(Button):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color]) -> None:
         super().__init__(rect, color)
     
-    def onClick(self, clipboard: Clipboard) -> None:
-        self.color = clipboard.gui.palette.get_color()
+    def onClick(self) -> int:
+        return 6
 
 class TextApplyButton(IconButton):
     def __init__(self, rect: Rect, color: Union[tuple[int, int, int, int], pygame.Color], icon: Surface) -> None:
         super().__init__(rect, color, icon)
 
-    def onClick(self, clipboard: Clipboard) -> None:
-        clipboard.moving = True
-        clipboard.eraser_check = True
+    def onClick(self) -> int:
+        return 7

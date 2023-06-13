@@ -1,11 +1,11 @@
 from PIL import ImageGrab, Image
 import pyperclip
 import pygame
-import GUI
+from GUI import Interface
 from typing import Optional, Union
 from ImageObject import ImageObject
 from Drawing import DrawingLine, DrawingClipboard
-from TextBox import TextBox
+from TextBox import TextBox 
 
 
 def getClipboardIMG(resize: float = 0, mousepos: tuple[int, int] = (0, 0)) -> Optional[ImageObject]:
@@ -309,7 +309,29 @@ class Clipboard():
         clickedGUI = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             clickedGUI = self.gui.rect.collidepoint(event.pos)
-            self.gui.button_press(event, self)
+            b = self.gui.button_press(event, self)
+            if b:
+                print(self.mode)
+                match b:
+                    case 1:
+                        self.mode = "drawing"
+                    case 2:
+                        self.mode = "eraser"
+                        print("in")
+
+                    case 3:
+                        self.mode = "movement"
+                    case 4:
+                        self.drawBoard.clearBoard()
+                        self.boxes = []
+                    case 5:
+                        self.mode = "text"
+                    case 6:
+                        self.color = self.gui.palette.get_color()
+                    case 7:
+                        self.moving = True
+                        self.eraser_check = True
+                    
 
             font_option = self.gui.font_dropdown.update(event, self.scroll)
             if font_option >= 0:
@@ -325,16 +347,15 @@ class Clipboard():
             self.gui.font_dropdown.menu_active = self.gui.font_dropdown.rect.collidepoint(event.pos)
             self.gui.size_dropdown.menu_active = self.gui.size_dropdown.rect.collidepoint(event.pos)
             
-            
-        if self.gui.font_dropdown.draw_menu:
-            if event.type == pygame.MOUSEWHEEL: 
-                self.scroll = min(self.scroll + event.y * 20, 0)
-            if event.type == pygame.MOUSEMOTION:
-                self.gui.font_dropdown.update(event, self.scroll)
-        elif self.gui.size_dropdown.draw_menu:
-            if event.type == pygame.MOUSEMOTION:
-                self.gui.size_dropdown.update(event, 0)
-
+        if self.gui.font_dropdown:
+            if self.gui.font_dropdown.draw_menu:
+                if event.type == pygame.MOUSEWHEEL: 
+                    self.scroll = min(self.scroll + event.y * 20, 0)
+                if event.type == pygame.MOUSEMOTION:
+                    self.gui.font_dropdown.update(event, self.scroll)
+            elif self.gui.size_dropdown.draw_menu:
+                if event.type == pygame.MOUSEMOTION:
+                    self.gui.size_dropdown.update(event, 0)
 
         return clickedGUI
 
@@ -346,7 +367,7 @@ class Clipboard():
         Limited to 60 FPS
         """
         self.drawBoard = DrawingClipboard()
-        self.gui = GUI.Interface(self.screen)
+        self.gui = Interface(self.screen)
         clock = pygame.time.Clock()
         pygame.mouse.set_cursor(pygame.cursors.diamond)
 
@@ -401,5 +422,7 @@ class Clipboard():
 
 
 if __name__ == "__main__":
+    s = pygame.Surface((10, 10))
+    i = Interface(s)
     clipboard = Clipboard((1000, 800))
 
