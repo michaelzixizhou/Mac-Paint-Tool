@@ -317,8 +317,6 @@ class Clipboard():
                         self.mode = "drawing"
                     case 2:
                         self.mode = "eraser"
-                        print("in")
-
                     case 3:
                         self.mode = "movement"
                     case 4:
