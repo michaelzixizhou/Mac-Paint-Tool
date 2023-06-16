@@ -328,6 +328,7 @@ class Clipboard():
                         self.mode = "text"
                     case 6:
                         self.color = self.gui.palette.get_color()
+                        self.gui.text_color_button.color = self.color
                     case 7:
                         self.moving = True
                         self.eraser_check = True
